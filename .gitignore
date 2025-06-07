@@ -1,0 +1,17 @@
+**/__pycache__/
+Datasets/
+mlenv/
+results/
+test_results/
+analysis_plots/
+checkpoints/
+sbatch_output/
+plot_matrices/
+analysis_results/
+result_imputation.txt
+result_forecast.txt
+forecast_comparison.png
+*.pyc
+*.png
+*.pdf
+*.db
