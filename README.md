@@ -53,5 +53,5 @@ python run.py --model_id pems04_12 --data_name PEMS04 --horizon 12
   <img src="results1.png" width="900" />
 </p>
 <p align="center">
-  <img src="results2.png" width="400" />
+  <img src="results2.png" width="900" />
 </p>
