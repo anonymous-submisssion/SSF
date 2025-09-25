@@ -1,5 +1,3 @@
-# Author: Abeer Mostafa
-
 import torch
 
 class TS_Hypergraph:
@@ -56,4 +54,5 @@ class TS_Hypergraph:
 
         #print("fe ", self.features.size())
         #print("edge_index ", self.edge_index.size())
+
         return self.features, self.edge_index
