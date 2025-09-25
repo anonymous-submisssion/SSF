@@ -1,5 +1,3 @@
-# Author: Abeer Mostafa
-
 import torch
 import numpy as np
 from scipy.fft import fft, fftfreq
@@ -136,3 +134,4 @@ class FFT_Hypergraph:
         """
 
         return self.features, self.edge_index
+
