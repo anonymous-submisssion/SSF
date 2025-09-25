@@ -1,5 +1,3 @@
-# Author: Abeer Mostafa
-
 import torch
 import numpy as np
 import pywt
@@ -72,4 +70,5 @@ class Wavelet_Hypergraph:
         """
         # print("feat size: ", torch.Tensor(self.features).size())
         # print("edge_index size: ", self.edge_index.size())
+
         return torch.Tensor(self.features), self.edge_index
