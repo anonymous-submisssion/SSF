@@ -288,7 +288,7 @@ class SheafHyperGCN(nn.Module):
         self.m = args.HyperGCN_mediators
 
         self.spectral_k = 5
-        self.use_spectral_filter = False
+        self.use_spectral_filter = True
 
     def spectral_filter(self, eigenvalues, filter_type='heat', params=None):
         """
