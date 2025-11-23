@@ -300,10 +300,12 @@ class Forecast(object):
 
                 # imputation
                 outputs = self.model(batch_x)
+                outputs = self.inverse_transform(scaler, outputs)
 
                 #print("out : ", outputs)
                 #print("target : ", batch_y)
                 # eval
+                batch_y = self.inverse_transform(scaler, batch_y)
                 batch_y = batch_y.to(self.device)
 
                 outputs = outputs.detach().cpu().numpy()
