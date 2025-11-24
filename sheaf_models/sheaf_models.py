@@ -5,7 +5,7 @@
 # Copyright © 2021 
 # https://github.com/IuliaDuta/sheaf_hypergraph_networks
 # Distributed under terms of the MIT license.
-
+import time
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -462,6 +462,7 @@ class SheafHyperGCN(nn.Module):
 
         H = H.view((H.shape[0]*self.d, self.MLP_hidden)) # (N * d) x num_features
         hyperedge_attr = hyperedge_attr.view((hyperedge_attr.shape[0]*self.d, self.MLP_hidden))
+        eigen_times = []
         for i, hidden in enumerate(self.layers):
             if i == 0 or self.dynamic_sheaf:
                 # compute the sheaf
@@ -476,33 +477,28 @@ class SheafHyperGCN(nn.Module):
                 
                 A = A.coalesce()
                 A = self.normalise(A, h_sheaf_index, num_nodes, self.d)
-
-                # Convert sparse to dense for eigendecomposition
                 A_dense = A.to_dense()
-                
                 eye_diag = torch.ones((num_nodes*self.d))
                 L = torch.diag(eye_diag).to(A.device) - A_dense
                 
-                # Perform eigendecomposition
-                eigenvalues, eigenvectors = torch.linalg.eigh(L)
-                
-                # Sort eigenvalues and eigenvectors (ascending order for eigenvalues)
-                idx = eigenvalues.argsort()
-                eigenvalues = eigenvalues[idx]
-                eigenvectors = eigenvectors[:, idx]
-                
-                # Store eigendecomposition for later use
+                eigen_start = time.time()
+
+                k = min(self.spectral_k, num_nodes*self.d - 1) if hasattr(self, 'spectral_k') else num_nodes*self.d
+
+                # Initial guess for eigenvectors
+                X = torch.randn(num_nodes*self.d, k, device=L.device)
+
+                L_sparse = L.to_sparse()
+
+                eigenvalues, eigenvectors = torch.lobpcg(L_sparse, k=k, X=X, largest=False)
+
                 self.eigenvalues = eigenvalues
                 self.eigenvectors = eigenvectors
-
-                k = min(self.spectral_k, eigenvalues.shape[0]) if hasattr(self, 'spectral_k') else eigenvalues.shape[0]
+                eigen_times.append(time.time() - eigen_start)
                 
                 if hasattr(self, 'use_spectral_filter') and self.use_spectral_filter:
-                    filtered_eigenvalues = self.spectral_filter(eigenvalues[:k])
-                    # Reconstruct filtered Laplacian
-                    eigenvectors_k = eigenvectors[:, :k]
-                    filtered_L = eigenvectors_k @ torch.diag(filtered_eigenvalues) @ eigenvectors_k.t()
-                    
+                    filtered_eigenvalues = self.spectral_filter(eigenvalues)
+                    filtered_L = eigenvectors @ torch.diag(filtered_eigenvalues) @ eigenvectors.t()
                     A = torch.diag(eye_diag).to(A.device) - filtered_L
                 else:
                     # Continue with original A if no filtering is applied
